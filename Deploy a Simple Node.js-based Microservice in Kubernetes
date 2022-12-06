@@ -1,0 +1,41 @@
+Deploy a Simple Node.js-based Microservice in Kubernetes
+
+kubectl get nodes
+kubectl describe node <NODE_NAME>
+
+kubectl create namespace team-12-customers
+kubectl get namespaces
+kubectl create namespace team-12-customers --dry-run=client -o yaml > team-12-namespace.yml
+cat team-12-namespace.yml
+kubectl delete namespace team-12-customers
+kubectl create -f team-12-namespace.yml
+kubectl config set-context --current --namespace=team-12-customers
+
+kubectl create deployment simple-api-deployment --image=veveritaengineering/simple-api:1
+kubectl get deployments
+kubectl get pods
+kubectl create deployment simple-api-deployment --image=veveritaengineering/simple-api:1  --dry-run=client -o yaml > team-12-deployment.yml
+cat team-12-deployment.yml
+kubectl delete deployment/simple-api-deployment
+kubectl create -f team-12-deployment.yml
+
+kubectl expose deployment simple-api-deployment --type=LoadBalancer --port=3000
+kubectl get services
+curl http://localhost:local_port
+kubectl expose deployment simple-api-deployment --type=LoadBalancer --port=3000 --dry-run=client -o yaml > team-12-service-loadbalancer.yml
+cat team-12-service-loadbalancer.yml
+kubectl delete service/simple-api-deployment
+kubectl create -f team-12-service-loadbalancer.yml
+kubectl get services
+
+cat kubernetes-dashboard.yaml
+kubectl create -f kubernetes-dashboard.yaml
+kubectl port-forward --address 0.0.0.0 -n kubernetes-dashboard service/kubernetes-dashboard 8080:80 &
+
+kubectl scale --replicas=4 deployment simple-api-deployment
+kubectl get pods
+kubectl get services
+
+kubectl describe deployment simple-api-deployment
+kubectl set image deployment/simple-api-deployment simple-api=veveritaengineering/simple-api:2
+kubectl describe deployment simple-api-deployment
