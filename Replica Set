@@ -1,0 +1,42 @@
+Build and Scale Replica Sets in Kubernetes
+
+kubectl cluster-info
+kubectl get nodes
+mkdir brezyweather
+cd brezyweather
+pwd
+vim ~/.vimrc
+set autoindent expandtab tabstop=2 shiftwidth=2
+
+vi brezyweather-rs.yml
+apiVersion: apps/v1
+kind: ReplicaSet
+metadata:
+  name: brezyweather-rs
+  labels:
+    app: brezyweather
+spec:
+  replicas: 2
+    selector:
+    matchLabels:
+      app: brezyweather
+        template:
+    metadata:
+      labels:
+        app: brezyweather
+            spec:
+      containers:
+      - name: brezyweather
+        image: codewithpraveen/labs-k8s-brezyapp:1.0.0
+                ports:
+        - containerPort: 80
+        
+    kubectl create -f brezyweather-rs.yml
+    kubectl get rs
+    kubectl get pods
+    kubectl describe pod xxx
+    curl xxx:80/weather
+    
+    kubectl edit rs/brezyweather-rs
+    kubectl get rs
+    kubectl get pods
