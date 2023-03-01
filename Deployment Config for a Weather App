@@ -1,0 +1,40 @@
+Deployment Config for a Weather App
+
+kubectl version --short
+kubectl cluster-info
+kubectl get nodes
+mkdir brezyweather
+cd brezyweather
+pwd
+vim ~/.vimrc
+set autoindent expandtab tabstop=2 shiftwidth=2
+
+vi brezyweather-deployment.yml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: brezyweather-deployment
+  labels:
+    app: brezyweather
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: brezyweather
+    template:
+      metadata:
+        labels:
+          app: brezyweather
+      spec:
+        containers:
+        - name: brezyweather
+          image: codewithpraveen/labs-k8s-brezyapp:1.0.0
+          resources:
+            limits:
+              memory: 128Mi
+              cpu: 500m
+          ports:
+          - containerPort: 80
+          
+kubectl create -f brezyweather-deployment.yml
+    
