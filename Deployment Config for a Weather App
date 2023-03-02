@@ -1,13 +1,15 @@
 Deployment Config for a Weather App
 
+set up env
+
 kubectl version --short
 kubectl cluster-info
 kubectl get nodes
 mkdir brezyweather
 cd brezyweather
 pwd
-vim ~/.vimrc
-set autoindent expandtab tabstop=2 shiftwidth=2
+------------------------------------------------------------------------
+write deployment 
 
 vi brezyweather-deployment.yml
 apiVersion: apps/v1
@@ -17,24 +19,27 @@ metadata:
   labels:
     app: brezyweather
 spec:
-  replicas: 3
+  replicas: 2
   selector:
     matchLabels:
       app: brezyweather
-    template:
-      metadata:
-        labels:
-          app: brezyweather
-      spec:
-        containers:
-        - name: brezyweather
-          image: codewithpraveen/labs-k8s-brezyapp:1.0.0
-          resources:
-            limits:
-              memory: 128Mi
-              cpu: 500m
-          ports:
-          - containerPort: 80
-          
+  template:
+    metadata:
+      labels:
+        app: brezyweather
+    spec:
+      containers:
+      - name: brezyweather
+        image: codewithpraveen/labs-k8s-rolling-update:1.0
+        ports:
+        - containerPort: 80
+ --------------------------------------------------------------------------
+create and verify deployment
+ 
 kubectl create -f brezyweather-deployment.yml
+kubectl get deployments
+kubectl describe deployment brezyweather-deployment
+kubectl get pods
+kubectl describe pod brezyweather-deployment-c4ff55d67-l45dt | grep IP
+curl 10.42.0.9:80/weather
     
