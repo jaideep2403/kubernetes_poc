@@ -1,0 +1,99 @@
+Rolling Updates and Rollbacks in Kubernetes
+---------------------------------------------------------
+setup env
+
+kubectl cluster-info
+#To further debug and diagnose cluster problems, use 'kubectl cluster-info dump'.
+kubectl get cs             -- health of cluster (control -manager , scheduler healthy ok)
+mkdir brezyweather
+cd brezyweather
+pwd
+ 
+--------------------------------------------------------------------------
+create deployment app
+
+vi  brezyweather-deployment.yml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: brezyweather-deployment
+  labels:
+    app: brezyweather
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: brezyweather
+  template:
+    metadata:
+      labels:
+        app: brezyweather
+    spec:
+      containers:
+      - name: brezyweather
+        image: codewithpraveen/labs-k8s-rolling-update:1.0
+        ports:
+        - containerPort: 80
+        
+ cat brezyweather-deployment.yml
+ kubectl apply -f brezyweather-deployment.yml
+ kubectl get deployments
+ kubectl describe deployment brezyweather-deployment
+ #########################################################################################
+ ther-deployment
+Name:                   brezyweather-deployment
+Namespace:              default
+CreationTimestamp:      Thu, 02 Mar 2023 09:02:06 +0000
+Labels:                 app=brezyweather
+Annotations:            deployment.kubernetes.io/revision: 1
+Selector:               app=brezyweather
+Replicas:               2 desired | 2 updated | 2 total | 2 available | 0 unavailable
+StrategyType:           RollingUpdate
+MinReadySeconds:        0
+RollingUpdateStrategy:  25% max unavailable, 25% max surge
+Pod Template:
+  Labels:  app=brezyweather
+  Containers:
+   brezyweather:
+    Image:        codewithpraveen/labs-k8s-rolling-update:1.0
+    Port:         80/TCP
+    Host Port:    0/TCP
+    Environment:  <none>
+    Mounts:       <none>
+  Volumes:        <none>
+Conditions:
+  Type           Status  Reason
+  ----           ------  ------
+  Available      True    MinimumReplicasAvailable
+  Progressing    True    NewReplicaSetAvailable
+OldReplicaSets:  <none>
+NewReplicaSet:   brezyweather-deployment-7c8f889d4c (2/2 replicas created)
+Events:
+  Type    Reason             Age   From                   Message
+  ----    ------             ----  ----                   -------
+  Normal  ScalingReplicaSet  57s   deployment-controller  Scaled up replica set brezyweather-deployment-7c8f889d4c to 2
+########################################################################################
+ kubectl get pods
+ ---------------------------------------------------------------------------------
+ Roll out deployment with new image
+ cp brezyweather-deployment.yml brezyweather-deployment-v2.yml
+ls
+vi brezyweather-deployment-v2.yml
+imgae:2.0
+kubectl apply -f brezyweather-deployment-v2.yml
+kubectl rollout status deployment brezyweather-deployment
+kubectl describe deployment brezyweather-deployment
+kubectl get rs
+kubectl get pods
+kubectl get pod brezyweather-deployment-6ccd4fbb48-znmsp
+kubectl describe  pod brezyweather-deployment-6ccd4fbb48-znmsp
+kubectl describe  pod brezyweather-deployment-6ccd4fbb48-znmsp | grep IP
+curl -X DELETE 10.42.0.11:80/api/v2/weather/3
+------------------------------------------------------------------------------
+Rollback Deployment
+kubectl rollout history deployment/brezyweather-deployment
+kubectl rollout undo deployment brezyweather-deployment
+kubectl rollout status deployment/brezyweather-deployment
+kubectl describe deployment brezyweather-deployment
+kubectl get pods
+kubectl describe pod brezyweather-deployment-7c8f889d4c-tj799
