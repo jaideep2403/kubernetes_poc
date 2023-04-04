@@ -1,0 +1,45 @@
+curl -fsSLo /usr/share/keyrings/kubernetes-archive-keyring.gpg https://packages.cloud.google.com/apt/doc/apt-key.gpg
+echo "deb [signed-by=/usr/share/keyrings/kubernetes-archive-keyring.gpg] https://apt.kubernetes.io/ kubernetes-xenial main" | sudo tee /etc/apt/sources.list.d/kubernetes.list
+
+apt update
+apt install -y kubelet=1.20.0-00 kubeadm=1.20.0-00 kubectl=1.20.0-00
+apt-mark hold kubelet kubeadm kubectl
+export VERSION=19.03 && curl -sSL get.docker.com | sh
+--------------------------------------------------------------------
+setup control plane
+mkdir /etc/docker
+cat <<EOF | sudo tee /etc/docker/daemon.json
+{
+  "exec-opts": ["native.cgroupdriver=systemd"],
+  "log-driver": "json-file",
+  "log-opts": {
+    "max-size": "100m"
+  },
+  "storage-driver": "overlay2"
+}
+EOF
+
+systemctl enable docker
+systemctl daemon-reload
+systemctl restart docker
+
+kubeadm init --ignore-preflight-errors=all    (on control plane)
+
+mkdir -p $HOME/.kube
+--------------------------------------------------------
+3.join nodes
+kubeadm token create --print-join-command
+kubeadm join 10.5.1.173:6443 --token izbax0.rpwe5ttoyo5yq9zw     --discovery-token-ca-cert-hash sha256:68ed8952135f3650334681de5e517429643d149c0d35cc05696d31e4fde34523 
+-------------------------------------------------------------------------
+4.networking
+kubectl apply -f https://github.com/weaveworks/weave/releases/download/v2.8.1/weave-daemonset-k8s-1.11.yaml
+watch kubectl get pods --all-namespaces
+kubectl get nodes
+--------------------------------------------------
+5.deploy socks shop
+git clone https://github.com/microservices-demo/microservices-demo.git
+cd microservices-demo/deploy/kubernetes
+kubectl apply -f complete-demo.yaml
+watch kubectl get pods --namespace sock-shop
+
+
