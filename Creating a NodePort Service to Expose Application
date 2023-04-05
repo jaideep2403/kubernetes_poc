@@ -1,0 +1,22 @@
+Creating a NodePort Service to Expose Application-----------
+kubectl create namespace payments-app
+kubectl get namespace   /    kubectl get ns
+
+kubectl run nginx-pod --image=nginx -n payments-app --labels="app=payments" --dry-run=client -o yaml > pod-1.yaml
+cat pod-1.yaml
+kubectl run apache-pod --image=httpd -n payments-app --labels="app=payments" --dry-run=client -o yaml > pod-2.yaml
+cat pod-2.yaml
+kubectl apply -f pod-1.yaml
+kubectl apply -f pod-2.yaml
+
+kubectl get pods -n payments-app
+kubectl get pods -o wide -n payments-app
+
+kubectl expose pod nginx-pod -n payments-app --name nodeport-service --port=80 --target-port=80 --type=NodePort --dry-run=client -o yaml > node-port.yaml
+cat node-port.yaml
+kubectl get service -n payments-app
+kubectl describe service nodeport-service -n payments-app
+
+kubectl get service -n payments-app
+kubectl get endpoints
+curl <endpointip>:nodeport
