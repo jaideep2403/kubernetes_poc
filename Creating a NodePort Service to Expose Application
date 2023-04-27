@@ -1,4 +1,8 @@
-Creating a NodePort Service to Expose Application-----------
+Pods are terminated and re-created. Development Team needs one single IP address through which traffic can be sent to and preferably distributed between all sets of Pods
+that are hosting the application. There might also be a future requirement of exposing the application on the Internet
+
+Creating a NodePort Service to Expose Application---------------------
+
 kubectl create namespace payments-app
 kubectl get namespace   /    kubectl get ns
 
@@ -17,6 +21,6 @@ cat node-port.yaml
 kubectl get service -n payments-app
 kubectl describe service nodeport-service -n payments-app
 
-kubectl get service -n payments-app
-kubectl get endpoints
+kubectl get service -n payments-app             --nodeport
+kubectl get endpoints                           -----endpoint ip
 curl <endpointip>:nodeport
